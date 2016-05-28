@@ -1,8 +1,8 @@
 #include "TFile.h"
 #include "TTree.h"
 
-int electron = 0;	int hadron = 1;
-int ytar = 0;	int delta = 1;	int yptar = 2;	int xptar = 3;
+int electron = 0;	int hadron = 1;		int both = 2;
+int ytar     = 0;	int delta  = 1;		int yptar = 2;		int xptar = 3;
 int entries;
 // ===========================================================================================
 void PlayTree4(){
@@ -25,10 +25,16 @@ void PlayTree4(){
 		h_hadron_res  [i+2]  = new TH1F("","",100,  -0.006,  	0.006);
 	}
 
-	TH2F* h2_e_d_y    = new TH2F("e_d_y"     ,"e_d_y"     , 80,    -6,    6, 80,    -6,    6);
-	TH2F* h2_h_d_y    = new TH2F("h_d_y"     ,"h_d_y"     , 80,    -6,    6, 80,    -6,    6);
-	TH2F* h2_e_ip_op  = new TH2F("e_ip_op"   ,"e_ip_op"   , 80, -0.07, 0.07, 80, -0.07, 0.07);
-        TH2F* h2_h_ip_op  = new TH2F("h_ip_op"   ,"h_ip_op"   , 80, -0.07, 0.07, 80, -0.07, 0.07);
+	TH2F* h2_e_d_y     = new TH2F("e_d_y"     ,"e_d_y"     , 70,    -6,    6, 70,    -6,    6);
+	TH2F* h2_h_d_y     = new TH2F("h_d_y"     ,"h_d_y"     , 70,    -6,    6, 70,    -6,    6);
+	TH2F* h2_e_ip_op   = new TH2F("e_ip_op"   ,"e_ip_op"   , 70, -0.07, 0.07, 70, -0.07, 0.07);
+        TH2F* h2_h_ip_op   = new TH2F("h_ip_op"   ,"h_ip_op"   , 70, -0.07, 0.07, 70, -0.07, 0.07);
+
+	TH2F* h2_y_evh     = new TH2F("y_evh"     ,"y_evh"     , 70,    -6,    6, 70,    -6,    6);
+        TH2F* h2_delta_evh = new TH2F("delta_evh" ,"delta_evh" , 70,    -6,    6, 70,    -6,    6);
+        TH2F* h2_ip_evh    = new TH2F("ip_evh"    ,"ip_evh"    , 70, -0.07, 0.07, 70, -0.07, 0.07);
+        TH2F* h2_op_evh    = new TH2F("op_evh"    ,"ip_evh"    , 70, -0.07, 0.07, 70, -0.07, 0.07);
+
 	// ************************************************************
 
 
@@ -74,10 +80,16 @@ void PlayTree4(){
 		h_hadron_res   [delta] 	-> Fill(ssdelta - ssdeltai);
 		h_hadron_res   [yptar] 	-> Fill(ssyptar - ssyptari);
 		h_hadron_res   [xptar] 	-> Fill(ssxptar - ssxptari);
+		
 		h2_e_d_y		-> Fill(hsytar , hsdelta);
 		h2_h_d_y                -> Fill(ssytar , ssdelta);
 		h2_e_ip_op              -> Fill(hsxptar, hsyptar);
 		h2_h_ip_op              -> Fill(ssxptar, ssyptar);
+		
+		h2_y_evh		-> Fill(ssytar , hsytar);
+        	h2_delta_evh		-> Fill(ssdelta,hsdelta);
+        	h2_ip_evh   		-> Fill(ssyptar,hsyptar);
+        	h2_op_evh   		-> Fill(ssxptar,hsxptar);
 	}
 	// **********************************************************************************
 
@@ -95,6 +107,11 @@ void PlayTree4(){
 	Pretty2D(h2_h_d_y   , 	ytar  , delta , hadron  );
 	Pretty2D(h2_e_ip_op , 	xptar , yptar , electron);
 	Pretty2D(h2_h_ip_op , 	xptar , yptar , hadron  );
+	
+	Pretty2D(h2_y_evh     ,   ytar  , ytar  , both);
+        Pretty2D(h2_delta_evh ,   delta , delta , both);
+        Pretty2D(h2_ip_evh    ,   yptar , yptar , both);
+        Pretty2D(h2_op_evh    ,   xptar , xptar , both);
 	// ***************************************************
 
 
@@ -121,6 +138,7 @@ void PlayTree4(){
 		if(i==0){leg->Draw("same");} 
 	}
 
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	TCanvas *c2 = new TCanvas("c2","Resolution",900,700);
 	c2->Divide(2,2);
 
@@ -130,13 +148,23 @@ void PlayTree4(){
 		c2->cd(i+1);    h_hadron_res[i] -> Draw();	h_electron_res[i] -> Draw("same");
 		if(i==1){leg->Draw("same");}
 	}
-
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	TCanvas *c3 = new TCanvas("c3","2D histos",1000,700);
         c3->Divide(2,2);
         c3->cd(1);		h2_e_d_y   -> Draw("COLZ");      
 	c3->cd(2);		h2_h_d_y   -> Draw("COLZ");
 	c3->cd(3);              h2_e_ip_op -> Draw("COLZ");
 	c3->cd(4);              h2_h_ip_op -> Draw("COLZ");
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	TCanvas *c4 = new TCanvas("c4","Correlated",1000,700);
+        c4->Divide(2,2);
+        c4->cd(1);         	h2_y_evh     -> Draw("COLZ");    
+        c4->cd(2);            	h2_delta_evh -> Draw("COLZ");
+        c4->cd(3);           	h2_ip_evh    -> Draw("COLZ");
+        c4->cd(4);          	h2_op_evh    -> Draw("COLZ");
+	 
 	// **********************************************************************************
 
 } //END MAIN FUNCTION
@@ -203,8 +231,9 @@ void AddLabels2D(TH2F *gP, int xvar, int yvar, int part){
 // ===========================================================================================
 // FUNCTION TO ADD TITLE TO 2D HISTOGRAMS
 void AddTitle2D(TH2F *gP, int xvar, int yvar, int part){
-        if(part == electron){gP->SetTitle("electron arm");}
-	if(part == hadron  ){gP->SetTitle("hadron arm"  );}
+        if(part == electron){gP->SetTitle("electron arm"       );}
+	if(part == hadron  ){gP->SetTitle("hadron arm"         );}
+	if(part == both    ){gP->SetTitle("electron vs. hadron");}
 	gStyle->SetTitleSize(0.09,"t");
 }
 
